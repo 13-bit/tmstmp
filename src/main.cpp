@@ -1,24 +1,17 @@
 #include <Arduino.h>
-#include <Adafruit_NeoPixel.h>
+#include <FastLED.h>
 #include <NTPClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <WiFiManager.h>
 #include <TimeLib.h>
 
-#define LED_PIN 2
+#define DATA_PIN 2
 #define NUM_BITS 32
 
 #define TIME_SYNC_INTERVAL 3600
 
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(32, LED_PIN, NEO_GRB + NEO_KHZ800);
+CRGB leds[NUM_BITS];
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
@@ -35,9 +28,8 @@ void setup() {
   WiFiManager wifiManager;
   wifiManager.autoConnect("13bit UNIX");
 
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
-
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_BITS);
+  
   timeClient.begin();
   setSyncProvider(getNtpTime);
   setSyncInterval(TIME_SYNC_INTERVAL);
@@ -49,14 +41,14 @@ void loop() {
   for(int i = 0; i < NUM_BITS; i++) {
 
     if (bitRead(((unsigned long) now()), i)) {
-      // INDEX, R, G, B
-      strip.setPixelColor(i, 31, 0, 0);
+      leds[i] = CRGB::OrangeRed;
+      leds[i].fadeLightBy(224);
     } else {
-      strip.setPixelColor(i, 0, 0, 0);
+      leds[i] = CRGB::Black;
     }
   }
 
-  strip.show();
+  FastLED.show();
 
   delay(1000);
 }
