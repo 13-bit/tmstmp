@@ -28,8 +28,8 @@ void setup() {
   WiFiManager wifiManager;
   wifiManager.autoConnect("13bit UNIX");
 
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_BITS);
-  
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_BITS).setCorrection(TypicalSMD5050);
+
   timeClient.begin();
   setSyncProvider(getNtpTime);
   setSyncInterval(TIME_SYNC_INTERVAL);
