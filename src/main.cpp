@@ -10,16 +10,36 @@
 #define NUM_BITS 32
 
 #define TIME_SYNC_INTERVAL 3600
+#define COLOR_CHANGE_INTERVAL 20
 
 CRGB leds[NUM_BITS];
 
+CRGB colors[4] = {CRGB::OrangeRed, CRGB::LimeGreen, CRGB::SkyBlue, CRGB::Amethyst};
+int colorIndex = -1;
+
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
+
+time_t nextColorChangeTime = 0;
 
 time_t getNtpTime() {
   timeClient.update();
 
   return (time_t) timeClient.getEpochTime();
+}
+
+CRGB updateColor() {
+  if (now() >= nextColorChangeTime) {
+    nextColorChangeTime += COLOR_CHANGE_INTERVAL;
+
+    colorIndex++;
+
+    if (colorIndex > 3) {
+      colorIndex = 0;
+    }
+  }
+
+  return colors[colorIndex];
 }
 
 void setup() {
@@ -33,15 +53,17 @@ void setup() {
   timeClient.begin();
   setSyncProvider(getNtpTime);
   setSyncInterval(TIME_SYNC_INTERVAL);
+
+  nextColorChangeTime = now();
 }
 
 void loop() {
-  // Serial.println(String(now()));
+  CRGB color = updateColor();
 
   for(int i = 0; i < NUM_BITS; i++) {
 
     if (bitRead(((unsigned long) now()), i)) {
-      leds[i] = CRGB::OrangeRed;
+      leds[i] = color;
       leds[i].fadeLightBy(224);
     } else {
       leds[i] = CRGB::Black;
@@ -51,4 +73,8 @@ void loop() {
   FastLED.show();
 
   delay(1000);
+}
+
+void adjustColor() {
+
 }
