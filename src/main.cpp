@@ -64,7 +64,7 @@ void loop() {
 
     if (bitRead(((unsigned long) now()), i)) {
       leds[i] = color;
-      leds[i].fadeLightBy(224);
+      leds[i].fadeLightBy(247);
     } else {
       leds[i] = CRGB::Black;
     }
